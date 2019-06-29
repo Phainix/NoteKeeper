@@ -1,6 +1,8 @@
 package com.example.faitha.notekeeper;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -9,11 +11,18 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 
 import java.util.List;
 
 public class NoteActivity extends AppCompatActivity {
+
+    public static final String NOTE_INFO = "com.example.faitha.notekeeper.NOTE_INFO";
+    private NoteInfo mNote;
+    private EditText mTitle;
+    private EditText mText;
+    private boolean mIsNewNote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +39,29 @@ public class NoteActivity extends AppCompatActivity {
         adapterCourses.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         spinnerCourses.setAdapter(adapterCourses);
+
+        readDisplayStateValues();
+
+        mTitle = (EditText) findViewById(R.id.text_note_title);
+        mText = (EditText) findViewById(R.id.text_note_text);
+
+        if(!mIsNewNote)
+            displayNote(spinnerCourses);
+    }
+
+    private void displayNote(Spinner spinnerCourses) {
+        List<CourseInfo> courses = DataManager.getInstance().getCourses();
+        int courseIndex = courses.indexOf(mNote.getCourse());
+        spinnerCourses.setSelection(courseIndex);
+
+        mTitle.setText(mNote.getTitle());
+        mText.setText(mNote.getText() );
+    }
+
+    private void readDisplayStateValues() {
+        Intent intent = getIntent();
+        mNote = intent.getParcelableExtra(NOTE_INFO);
+        mIsNewNote = mNote == null;
     }
 
     @Override
