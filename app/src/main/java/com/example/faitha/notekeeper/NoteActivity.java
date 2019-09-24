@@ -30,7 +30,6 @@ public class NoteActivity extends AppCompatActivity {
     private EditText mTitle;
     private EditText mText;
     private boolean mIsNewNote;
-    private int mNotePositon;
     private Spinner mSpinnerCourses;
     private int mNotePosition;
     private boolean mIsCancelling;
@@ -95,11 +94,11 @@ public class NoteActivity extends AppCompatActivity {
     private void readDisplayStateValues() {
         Intent intent = getIntent();
         // mNote = intent.getParcelableExtra(NOTE_INFO);
-        mNotePositon = intent.getIntExtra(NOTE_POSITION, POSITION_NOT_SET);
-        mIsNewNote = mNotePositon == POSITION_NOT_SET;
+        mNotePosition = intent.getIntExtra(NOTE_POSITION, POSITION_NOT_SET);
+        mIsNewNote = mNotePosition == POSITION_NOT_SET;
         if(!mIsNewNote) {
             List<NoteInfo> noteList = DataManager.getInstance().getNotes();
-            mNote = noteList.get(mNotePositon);
+            mNote = noteList.get(mNotePosition);
         } else {
             createNewNote();
         }
@@ -139,7 +138,33 @@ public class NoteActivity extends AppCompatActivity {
             finish();
         }
 
+        if(id == R.id.action_next) {
+            moveNext();
+        }
+
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_next);
+
+        int lastNoteIndex = DataManager.getInstance().getNotes().size() - 1;
+
+        item.setEnabled(mNotePosition < lastNoteIndex);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    private void moveNext() {
+        saveNote();
+
+        mNotePosition += 1;
+        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
+
+        saveOriginalNoteValue();
+        displayNote(mSpinnerCourses);
+
+        invalidateOptionsMenu();
     }
 
     private void showCamera() {
@@ -166,7 +191,7 @@ public class NoteActivity extends AppCompatActivity {
         super.onPause();
         if(mIsCancelling) {
             if(mIsNewNote) {
-                DataManager.getInstance().removeNote(mNotePositon);
+                DataManager.getInstance().removeNote(mNotePosition);
             } else {
                 storePreviousNoteValues();
             }
