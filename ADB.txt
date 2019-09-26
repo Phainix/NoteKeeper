@@ -1,0 +1,11 @@
+cd /Users/FAITH.A/Library/Android/sdk/platform-tools
+/Users/FAITH.A/Library/Android/sdk/platform-tools/adb
+
+/Users/FAITH.A/Library/Android/sdk/platform-tools/adb exec-out "run-as com.example.faitha.notekeeper cat databases/NoteKeeper.db" > /Users/FAITH.A/Downloads/NoteKeeper.db
+
+/Development/sqlite/sqlite3 /Users/FAITH.A/Downloads/NoteKeeper.db
+
+.tables
+.schema table_name
+
+SELECT * FROM table_name;
