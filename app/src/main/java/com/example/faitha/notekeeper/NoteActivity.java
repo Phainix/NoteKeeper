@@ -30,6 +30,8 @@ import com.example.faitha.notekeeper.NoteKeeperDatabaseContract.NoteInfoEntry;
 
 import java.util.List;
 
+import static com.example.faitha.notekeeper.NoteKeeperProviderContract.*;
+
 public class NoteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     // public static final String NOTE_INFO = "com.example.faitha.notekeeper.NOTE_INFO";
@@ -396,14 +398,14 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private CursorLoader createLoaderCourses() {
         mCourseQueryFinished = false;
-        Uri uri = Uri.parse("content://com.example.faitha.notekeeper.provider");
+        Uri uri = Courses.CONTENT_URI;
         final String[] courseColumns = {
-                CourseInfoEntry.COLUMN_COURSE_TITLE,
-                CourseInfoEntry.COLUMN_COURSE_ID,
-                CourseInfoEntry._ID
+                Courses.COLUMN_COURSE_TITLE,
+                Courses.COLUMN_COURSE_ID,
+                Courses._ID
         };
 
-        return new CursorLoader(this, uri, courseColumns, null, null, CourseInfoEntry.COLUMN_COURSE_TITLE);
+        return new CursorLoader(this, uri, courseColumns, null, null, Courses.COLUMN_COURSE_TITLE);
     }
 
     private CursorLoader createLoaderNotes() {
