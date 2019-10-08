@@ -37,7 +37,7 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
         <provider
-            android:name=".NokeKeeperProvider"
+            android:name=".NoteKeeperProvider"
             android:authorities="com.example.faitha.notekeeper.provider"
             android:enabled="true"
             android:exported="true"></provider>
