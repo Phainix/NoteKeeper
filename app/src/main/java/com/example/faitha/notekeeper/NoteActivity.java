@@ -1,5 +1,7 @@
 package com.example.faitha.notekeeper;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -8,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 
@@ -15,10 +18,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
 
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -241,7 +247,19 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
             moveNext();
         }
 
+        if(id == R.id.action_set_reminder) {
+            showReminderNotification();
+        }
+
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showReminderNotification() {
+        String noteText = mText.getText().toString();
+        String noteTitle = mTitle.getText().toString();
+        Log.i(NoteActivity.class.getSimpleName(),"Reminder was clicked " + noteText + " " + noteTitle);
+        int noteId = (int) ContentUris.parseId(mNoteUri);
+        NoteReminderNotification.notify(this, noteText, noteTitle, noteId);
     }
 
     @Override
