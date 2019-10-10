@@ -11,6 +11,7 @@ import com.example.faitha.notekeeper.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.example.faitha.notekeeper.NoteKeeperDatabaseContract.NoteInfoEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.view.View;
@@ -64,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        enableStrictMode();
+
         mDbOpenHelper = new NoteKeeperOpenHelper(this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -79,6 +82,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         initializeDisplayContent();
+    }
+
+    private void enableStrictMode() {
+        if(BuildConfig.DEBUG) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+        }
     }
 
 
@@ -134,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initializeDisplayContent() {
-        DataManager.loadFromDB(mDbOpenHelper);
+       // DataManager.loadFromDB(mDbOpenHelper);
         mRecyclerItems = (RecyclerView) findViewById(R.id.list_items);
         mNotesLinearLayoutManager = new LinearLayoutManager(this);
         mCoursesLayoutManager = new GridLayoutManager(this,

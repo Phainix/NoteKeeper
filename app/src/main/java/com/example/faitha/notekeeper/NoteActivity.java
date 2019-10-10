@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 
 import androidx.annotation.NonNull;
@@ -27,17 +28,20 @@ import androidx.loader.content.Loader;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 
 import com.example.faitha.notekeeper.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.example.faitha.notekeeper.NoteKeeperDatabaseContract.NoteInfoEntry;
+import com.google.android.material.snackbar.Snackbar;
 
 import static com.example.faitha.notekeeper.NoteKeeperProviderContract.*;
 
 public class NoteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final String TAG = NoteActivity.class.getSimpleName();
     // public static final String NOTE_INFO = "com.example.faitha.notekeeper.NOTE_INFO";
     public static final String NOTE_POSITION = "com.example.faitha.notekeeper.NOTE_POSITION";
     public static final String NOTE_ID = "com.example.faitha.notekeeper.NOTE_ID";
@@ -205,14 +209,30 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         values.put(Notes.COLUMN_NOTE_TITLE, "");
         values.put(Notes.COLUMN_NOTE_TEXT, "");
 
-        AsyncTask task = new AsyncTask() {
+        AsyncTask<ContentValues, Void, Uri> task = new AsyncTask<ContentValues, Void, Uri>() {
             @Override
-            protected Object doInBackground(Object[] objects) {
-                mNoteUri = getContentResolver().insert(Notes.CONTENT_URI, values);
-                return null;
+            protected Uri doInBackground(ContentValues... params) {
+                Log.d(TAG, "Call to execute thread: " + Thread.currentThread().getId());
+                ContentValues insertValues = params[0];
+                Uri rowUri = getContentResolver().insert(Notes.CONTENT_URI, insertValues);
+                return rowUri;
+            }
+
+            @Override
+            protected void onPostExecute(Uri uri) {
+                Log.d(TAG, "Call to execute thread: " + Thread.currentThread().getId());
+                super.onPostExecute(uri);
+                mNoteUri = uri;
+                displaySnackBar(mNoteUri.toString());
             }
         };
-        task.execute();
+        task.execute(values);
+        Log.d(TAG, "Call to execute thread: " + Thread.currentThread().getId());
+    }
+
+    private void displaySnackBar(String toString) {
+        View view = findViewById(R.id.content_note);
+        Snackbar.make(view, toString, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
