@@ -1,5 +1,8 @@
 package com.example.faitha.notekeeper;
 
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -13,6 +16,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PersistableBundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.view.Gravity;
@@ -53,6 +57,7 @@ import static com.example.faitha.notekeeper.NoteKeeperProviderContract.*;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, LoaderManager.LoaderCallbacks<Cursor>{
 
     public static final int LOAD_NOTES = 0;
+    public static final int NOTE_UPLOADER_JOB_ID = 1;
     private NoteRecyclerAdapter mNoteRecyclerAdapter;
     private CourseRecyclerAdapter mCourseRecyclerAdapter;
     private RecyclerView mRecyclerItems;
@@ -244,8 +249,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.action_backup_notes:
                 backUpNotes();
                 break;
+            case R.id.action_upload_notes:
+                scheduleNoteUpload();
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void scheduleNoteUpload() {
+        PersistableBundle persistableBundle = new PersistableBundle();
+        persistableBundle.putString(NoteUploaderJobService.EXTRA_DATA_URI, Notes.CONTENT_URI.toString());
+
+        ComponentName componentName = new ComponentName(this, NoteUploaderJobService.class);
+        JobInfo jobInfo = new JobInfo.Builder(NOTE_UPLOADER_JOB_ID, componentName)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setExtras(persistableBundle)
+                .build();
+
+        JobScheduler jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+        jobScheduler.schedule(jobInfo);
     }
 
     private void backUpNotes() {
