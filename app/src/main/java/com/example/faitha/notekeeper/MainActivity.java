@@ -11,8 +11,11 @@ import com.example.faitha.notekeeper.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.example.faitha.notekeeper.NoteKeeperDatabaseContract.NoteInfoEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -117,6 +120,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         getSupportLoaderManager().restartLoader(LOAD_NOTES, null, this);
         updateNavHeader();
+
+        openDrawer();
+    }
+
+    private void openDrawer() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+                drawerLayout.openDrawer(Gravity.LEFT);
+            }
+        }, 1000);
+
     }
 
     private void loadNotes() {
