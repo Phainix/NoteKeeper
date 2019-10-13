@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.example.faitha.notekeeper.NoteKeeperDatabaseContract.CourseInfoEntry;
@@ -58,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public static final int LOAD_NOTES = 0;
     public static final int NOTE_UPLOADER_JOB_ID = 1;
+    public static final int LOAD_COURSES = 1;
+    public int currentLoader = LOAD_NOTES;
     private NoteRecyclerAdapter mNoteRecyclerAdapter;
     private CourseRecyclerAdapter mCourseRecyclerAdapter;
     private RecyclerView mRecyclerItems;
@@ -123,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onResume() {
         super.onResume();
+
         getSupportLoaderManager().restartLoader(LOAD_NOTES, null, this);
         updateNavHeader();
 
@@ -157,15 +161,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void updateNavHeader() {
         NavigationView navigationView = (NavigationView)  findViewById(R.id.nav_view);
         View headerView = navigationView.getHeaderView(0);
-        TextView textUserName = (TextView) headerView.findViewById(R.id.text_user_name);
-        TextView textEmailAddress = (TextView) headerView.findViewById(R.id.text_email_address);
+        final TextView textUserName = (TextView) headerView.findViewById(R.id.text_user_name);
+        final TextView textEmailAddress = (TextView) headerView.findViewById(R.id.text_email_address);
 
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        String userName = pref.getString("user_display_name", "");
-        String email = pref.getString("user_email_address", "");
+        AsyncTask task = new AsyncTask() {
+            private String userName;
+            private String email;
 
-        textUserName.setText(userName);
-        textEmailAddress.setText(email);
+            @Override
+            protected Object doInBackground(Object[] objects) {
+                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                userName = pref.getString("user_display_name", "");
+                email = pref.getString("user_email_address", "");
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Object o) {
+                super.onPostExecute(o);
+                textUserName.setText(userName);
+                textEmailAddress.setText(email);
+            }
+        };
+        task.execute();
     }
 
     private void initializeDisplayContent() {
@@ -177,8 +195,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mNoteRecyclerAdapter = new NoteRecyclerAdapter(this, null);
 
-        List<CourseInfo> courses = DataManager.getInstance().getCourses();
-        mCourseRecyclerAdapter = new CourseRecyclerAdapter(this, courses);
+        mCourseRecyclerAdapter = new CourseRecyclerAdapter(this, null);
 
         displayNotes();
     }
@@ -188,6 +205,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
 
         selectNavigationMenuItem(R.id.nav_notes);
+        getSupportLoaderManager().restartLoader(LOAD_NOTES, null, this);
+
     }
 
     private void selectNavigationMenuItem(int id) {
@@ -201,6 +220,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mRecyclerItems.setAdapter(mCourseRecyclerAdapter);
 
         selectNavigationMenuItem(R.id.nav_courses);
+        getSupportLoaderManager().restartLoader(LOAD_COURSES, null, this);
+
     }
 
     @Override
@@ -297,6 +318,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             loader = new CursorLoader(this, Notes.CONTENT_EXPANDED_URI, noteColumns,null, null, noteOrderBy);
 
+        } else if(id == LOAD_COURSES) {
+            loader = new CursorLoader(this) {
+                @Override
+                public Cursor loadInBackground() {
+                    SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
+                    final String[] courseColumns = {
+                            CourseInfoEntry._ID,
+                            CourseInfoEntry.COLUMN_COURSE_TITLE,
+                            CourseInfoEntry.COLUMN_COURSE_ID
+                    };
+                    final String courseOrderBy = CourseInfoEntry.COLUMN_COURSE_TITLE;
+
+                    return db.query(CourseInfoEntry.TABLE_NAME, courseColumns, null, null, null, null, courseOrderBy);
+                }
+            };
+
         }
         return loader;
     }
@@ -306,6 +343,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = loader.getId();
         if(id == LOAD_NOTES) {
             mNoteRecyclerAdapter.changeCursor(data);
+        } else if(id == LOAD_COURSES) {
+            mCourseRecyclerAdapter.changeCursor(data);
         }
     }
 
@@ -314,6 +353,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = loader.getId();
         if(id == LOAD_NOTES) {
             mNoteRecyclerAdapter.changeCursor(null);
+        } else if(id == LOAD_COURSES) {
+            mCourseRecyclerAdapter.changeCursor(null);
         }
     }
 }

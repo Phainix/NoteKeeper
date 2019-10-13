@@ -78,7 +78,6 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
         if(mCursor == null)
             return 0;
         return mCursor.getCount();
-        // return mNotes.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

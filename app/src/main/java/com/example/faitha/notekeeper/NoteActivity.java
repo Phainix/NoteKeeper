@@ -56,6 +56,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final int SHOW_CAMERA = 1;
     public static final int LOADER_NOTES = 0;
     public static final int LOADER_COURSES = 1;
+    private static final String NOTE_URI = "NOTE_URI";
 
 
     private NoteInfo mNote;
@@ -105,9 +106,11 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
         readDisplayStateValues();
         if(savedInstanceState == null) {
-            // saveOriginalNoteValue();
+            saveOriginalNoteValue();
         } else {
-            // restoreOriginalNoteValues(savedInstanceState);
+            restoreOriginalNoteValues(savedInstanceState);
+            String noteUri = savedInstanceState.getString(NOTE_URI);
+            mNoteUri = Uri.parse(noteUri);
         }
 
         if(!mIsNewNote)
@@ -159,13 +162,14 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         if(mIsNewNote) {
            return;
         } else {
-            mOriginalNoteCourseId = mNote.getCourse().getCourseId();
-            mOriginalNoteTitle = mTitle.getText().toString();
-            mOriginalNoteText = mText.getText().toString();
+//            mOriginalNoteCourseId = mNote.getCourse().getCourseId();
+//            mOriginalNoteTitle = mTitle.getText().toString();
+//            mOriginalNoteText = mText.getText().toString();
         }
     }
 
     private void displayNote() {
+        Log.i(TAG, Integer.toString(mNoteCursor.getCount()));
         String courseId = mNoteCursor.getString(mCourseIdPos);
         String noteTitle = mNoteCursor.getString(mNoteTitlePos);
         String noteText = mNoteCursor.getString(mNoteTextPos);
@@ -454,7 +458,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         outState.putString(ORIGINAL_NOTE_COURSE_ID, mOriginalNoteCourseId);
         outState.putString(ORIGINAL_NOTE_TEXT, mOriginalNoteText);
         outState.putString(ORIGINAL_NOTE_TITLE, mOriginalNoteTitle);
-
+        outState.putString(NOTE_URI, mNoteUri.toString());
     }
 
     @Override
@@ -505,6 +509,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         else if(loader.getId() == LOADER_COURSES) {
             mAdapterCourses.changeCursor(data);
             mCourseQueryFinished = true;
+            Log.i(TAG, "Course Query Finished");
             displayNotesWhenQueriesFinished();
         }
     }
@@ -516,14 +521,18 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         mNoteTitlePos = mNoteCursor.getColumnIndex(NoteInfoEntry.COLUMN_NOTE_TITLE);
         mNoteTextPos = mNoteCursor.getColumnIndex(NoteInfoEntry.COLUMN_NOTE_TEXT);
 
-        mNoteCursor.moveToNext();
+        if(!mNoteCursor.isLast())mNoteCursor.moveToNext();
         mNotesQueryFinished = true;
+        Log.i(TAG, "Note Query Finished");
         displayNotesWhenQueriesFinished();
 
     }
 
+
+
     private void displayNotesWhenQueriesFinished() {
         if(mNotesQueryFinished && mCourseQueryFinished) {
+            Log.i(TAG, "Displaying");
             displayNote();
         }
     }
