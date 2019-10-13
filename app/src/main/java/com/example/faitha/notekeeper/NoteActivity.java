@@ -1,7 +1,9 @@
 package com.example.faitha.notekeeper;
 
+import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -12,6 +14,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 
@@ -310,7 +313,23 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         String noteTitle = mTitle.getText().toString();
         Log.i(NoteActivity.class.getSimpleName(),"Reminder was clicked " + noteText + " " + noteTitle);
         int noteId = (int) ContentUris.parseId(mNoteUri);
-        NoteReminderNotification.notify(this, noteText, noteTitle, noteId);
+
+        Intent intent =  new Intent(this, NoteReminderReceiver.class);
+        intent.putExtra(NoteReminderReceiver.EXTRA_NOTE_ID, noteId);
+        intent.putExtra(NoteReminderReceiver.EXTRA_NOTE_TITLE, noteTitle);
+        intent.putExtra(NoteReminderReceiver.EXTRA_NOTE_TEXT, noteText);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+
+        long currentTimeInMilli = SystemClock.elapsedRealtime();
+        long ONE_HOUR = 60 * 60 * 1000;
+
+        long TEN_SECONDS = 10 * 1000;
+
+        long alarmTime = currentTimeInMilli + TEN_SECONDS;
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME, alarmTime, pendingIntent);
     }
 
     @Override
