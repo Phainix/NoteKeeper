@@ -11,10 +11,6 @@
         android:paddingLeft="10dp"
         android:paddingTop="10dp"
         android:paddingBottom="40dp"
-        app:exampleColor="#33b5e5"
-        app:exampleDimension="24sp"
-        app:exampleDrawable="@android:drawable/ic_menu_add"
-        app:exampleString="Hello, ModuleStatusView"
         tools:paddingEnd="10dp" />
 
 </FrameLayout>
